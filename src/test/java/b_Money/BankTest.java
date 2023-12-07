@@ -45,7 +45,8 @@ public class BankTest {
 		Field privateField = Bank.class.getDeclaredField("accounts");
 		privateField.setAccessible(true);
 		Hashtable<String, Account> accounts = (Hashtable<String, Account>) privateField.get(SweBank);
-		assertTrue(accounts.containsKey("Test"));
+		assertTrue(accounts.containsKey("Test")); // Test failed
+		assertThrows(AccountExistsException.class, ()-> SweBank.openAccount("Test"));
 	}
 
 	@Test
@@ -54,19 +55,17 @@ public class BankTest {
 		Bank bank = SweBank;
 		Money deposit = new Money(1000, SEK);
 		int before = bank.getBalance(accountId);
-		SweBank.deposit(accountId, deposit);
+		SweBank.deposit(accountId, deposit); // Test failed
 		int after = bank.getBalance(accountId);
 		assertEquals(before + deposit.getAmount(), after);
 	}
 
 	@Test
-	public void testWithdraw() throws AccountDoesNotExistException {
+	public void testWithdraw() throws AccountDoesNotExistException, NotEnoughFundsException {
 		SweBank.deposit("Bob", new Money(3000, SEK));
 		SweBank.withdraw("Bob", new Money(1000, SEK));
-		assertEquals(2000, (int) SweBank.getBalance("Bob"));
-		assertThrows(NotEnoughFundsException.class, () -> {
-			SweBank.withdraw("Bob", new Money(5000, SEK));
-		});
+		assertEquals(2000, (int) SweBank.getBalance("Bob")); // Test failed
+		assertThrows(NotEnoughFundsException.class, () -> SweBank.withdraw("Bob", new Money(5000, SEK)));
 	}
 	
 	@Test
@@ -75,31 +74,27 @@ public class BankTest {
 	}
 	
 	@Test
-	public void testTransfer() throws AccountDoesNotExistException {
+	public void testTransfer() throws AccountDoesNotExistException, NotEnoughFundsException {
 		SweBank.deposit("Bob", new Money(3000, SEK));
 		SweBank.transfer("Bob", "Ulrika", new Money(3000, SEK));
-		assertEquals(0, (int) SweBank.getBalance("Bob"));
+		assertEquals(0, (int) SweBank.getBalance("Bob")); // Test failed
 		assertEquals(3000, (int) SweBank.getBalance("Ulrika"));
-		assertThrows(NotEnoughFundsException.class, () -> {
-			SweBank.transfer("Bob", "Ulrika", new Money(3000, SEK));
-		});
+		assertThrows(NotEnoughFundsException.class, () -> SweBank.transfer("Bob", "Ulrika", new Money(3000, SEK)));
 	}
 	
 	@Test
-	public void testTimedPayment() throws AccountDoesNotExistException {
+	public void testTimedPayment() throws AccountDoesNotExistException, NotEnoughFundsException {
 		SweBank.deposit("Bob", new Money(3000, SEK));
 		SweBank.addTimedPayment("Bob", "1", 1, 1, new Money(1000, SEK), Nordea, "Ulrika");
 		SweBank.tick();
-		assertEquals(2000, (int) Nordea.getBalance("Bob"));
-		assertEquals(1000, (int) SweBank.getBalance("Ulrika"));
+		assertEquals(2000, (int) SweBank.getBalance("Bob"));
+		assertEquals(1000, (int) Nordea.getBalance("Ulrika"));
 		SweBank.tick();
-		assertEquals(1000, (int) Nordea.getBalance("Bob"));
-		assertEquals(2000, (int) SweBank.getBalance("Ulrika"));
+		assertEquals(1000, (int) SweBank.getBalance("Bob"));
+		assertEquals(2000, (int) Nordea.getBalance("Ulrika"));
 		SweBank.tick();
-		assertEquals(0, (int) Nordea.getBalance("Bob"));
-		assertEquals(3000, (int) SweBank.getBalance("Ulrika"));
-		assertThrows(NotEnoughFundsException.class, ()->{
-			SweBank.tick();
-		});
+		assertEquals(0, (int) SweBank.getBalance("Bob"));
+		assertEquals(3000, (int) Nordea.getBalance("Ulrika"));
+		assertThrows(NotEnoughFundsException.class, ()-> SweBank.tick());
 	}
 }

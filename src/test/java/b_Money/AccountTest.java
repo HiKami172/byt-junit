@@ -7,9 +7,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 public class AccountTest {
-	Currency SEK, DKK;
-	Bank Nordea;
-	Bank DanskeBank;
+	Currency SEK;
 	Bank SweBank;
 	Account testAccount;
 	
@@ -19,9 +17,9 @@ public class AccountTest {
 		SweBank = new Bank("SweBank", SEK);
 		SweBank.openAccount("Alice");
 		testAccount = new Account("Hans", SEK);
-		testAccount.deposit(new Money(10000000, SEK));
+		testAccount.deposit(new Money(3000, SEK));
 
-		SweBank.deposit("Alice", new Money(1000000, SEK)); //Error on deposit
+		SweBank.deposit("Alice", new Money(3000, SEK)); //Error on deposit
 	}
 	
 	@Test
@@ -38,7 +36,7 @@ public class AccountTest {
 	}
 
 	@Test
-	public void testTimedPayment() throws AccountDoesNotExistException {
+	public void testTimedPayment() throws NotEnoughFundsException {
 		String paymentId = "payment1";
 		Integer interval = 1;
 		Integer next = 1;
@@ -47,25 +45,28 @@ public class AccountTest {
 		testAccount.addTimedPayment(paymentId, interval, next, amount, SweBank, toAccount);
 		Money initialBalance = testAccount.getBalance();
 		testAccount.tick();
-		assertEquals(initialBalance.sub(amount), testAccount.getBalance());
+		assertEquals(initialBalance.sub(amount).getAmount(), testAccount.getBalance().getAmount());
 		testAccount.tick();
-		assertEquals(initialBalance.sub(amount).sub(amount), testAccount.getBalance());
+		assertEquals(initialBalance.sub(amount).sub(amount).getAmount(), testAccount.getBalance().getAmount());
 	}
 
+
 	@Test
-	public void testAddWithdraw() {
+	public void testAddWithdraw() throws NotEnoughFundsException {
 		Money depositAmount = new Money(5000, SEK);
 		Money withdrawAmount = new Money(2000, SEK);
 		Money initialBalance = testAccount.getBalance();
 		testAccount.deposit(depositAmount);
-		assertEquals(initialBalance.add(depositAmount), testAccount.getBalance());
+		assertEquals(initialBalance.add(depositAmount).getAmount(), testAccount.getBalance().getAmount());
 		testAccount.withdraw(withdrawAmount);
-		assertEquals(initialBalance.add(depositAmount).sub(withdrawAmount), testAccount.getBalance());
+		assertEquals(initialBalance.add(depositAmount).sub(withdrawAmount).getAmount(), testAccount.getBalance().getAmount());
 	}
 
 	@Test
 	public void testGetBalance() {
-		assertEquals(new Money(10000000, SEK), testAccount.getBalance());
+		Money balance = testAccount.getBalance();
+		assertEquals(3000, (int) balance.getAmount());
+		assertEquals(SEK, balance.getCurrency());
 	}
 
 }
