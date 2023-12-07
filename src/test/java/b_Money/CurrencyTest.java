@@ -19,32 +19,47 @@ public class CurrencyTest {
 
 	@Test
 	public void testGetName() {
+		// Get name and compare
 		assertEquals("SEK", SEK.getName());
+		assertEquals("DKK", DKK.getName());
+		assertEquals("EUR", EUR.getName());
 	}
 	
 	@Test
 	public void testGetRate() {
+		// Get rate and compare
 		assertEquals(0.15, SEK.getRate(), 0.0001);
+		assertEquals(0.20, DKK.getRate(), 0.0001);
+		assertEquals(1.50, EUR.getRate(), 0.0001);
 	}
 	
 	@Test
 	public void testSetRate() {
-		double newRate = 0.33;
-		SEK.setRate(newRate);
-		assertEquals(newRate, SEK.getRate(), 0.0001);
+		// Set rate, then get it and compare
+		SEK.setRate(0.10);
+		assertEquals(0.10, SEK.getRate(), 0.0001);
+		DKK.setRate(0.50);
+		assertEquals(0.50, DKK.getRate(), 0.0001);
+		EUR.setRate(0.33);
+		assertEquals(0.33, EUR.getRate(), 0.0001);
 	}
-	
+
 	@Test
 	public void testGlobalValue() {
+		// Get universal value for 100 units of currency and compare
 		int amount = 100;
-		int result = SEK.universalValue(amount);
-		assertEquals(15, result);
+		assertEquals(15, (int) SEK.universalValue(amount));
+		assertEquals(20, (int) DKK.universalValue(amount));
+		assertEquals(150, (int) EUR.universalValue(amount));
 	}
 	
 	@Test
 	public void testValueInThisCurrency() {
-		int result = SEK.valueInThisCurrency(100, EUR);
-		assertEquals(1000, result);
+		// Convert 100 units of SEK and DKK to EUR and compare
+		int result1 = SEK.valueInThisCurrency(100, EUR);
+		int result2 = DKK.valueInThisCurrency(100, EUR);
+		assertEquals(1000, result1);
+		assertEquals(750, result2);
 	}
 
 }
