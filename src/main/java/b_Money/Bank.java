@@ -3,9 +3,9 @@ package main.java.b_Money;
 import java.util.Hashtable;
 
 public class Bank {
-	private Hashtable<String, Account> accounts = new Hashtable<String, Account>();
-	private String name;
-	private Currency currency;
+	private final Hashtable<String, Account> accounts = new Hashtable<>();
+	private final String name;
+	private final Currency currency;
 	
 	/**
 	 * New Bank
@@ -43,7 +43,8 @@ public class Bank {
 			throw new AccountExistsException();
 		}
 		else {
-			accounts.get(accountid);
+			// TODO Account open test failure. Get instead of put.
+			accounts.put(accountid, new Account(accountid, currency));
 		}
 	}
 	
@@ -54,7 +55,8 @@ public class Bank {
 	 * @throws AccountDoesNotExistException If the account does not exist
 	 */
 	public void deposit(String accountid, Money money) throws AccountDoesNotExistException {
-		if (accounts.containsKey(accountid)) {
+		// TODO deposit test failure. Missed negation
+		if (!accounts.containsKey(accountid)) {
 			throw new AccountDoesNotExistException();
 		}
 		else {
@@ -69,13 +71,14 @@ public class Bank {
 	 * @param money Money to withdraw
 	 * @throws AccountDoesNotExistException If the account does not exist
 	 */
-	public void withdraw(String accountid, Money money) throws AccountDoesNotExistException {
+	public void withdraw(String accountid, Money money) throws AccountDoesNotExistException, NotEnoughFundsException {
 		if (!accounts.containsKey(accountid)) {
 			throw new AccountDoesNotExistException();
 		}
 		else {
+			// TODO Found in withdrawal test. Wrong method used
 			Account account = accounts.get(accountid);
-			account.deposit(money);
+			account.withdraw(money);
 		}
 	}
 	
@@ -102,7 +105,7 @@ public class Bank {
 	 * @param amount Amount of Money to transfer
 	 * @throws AccountDoesNotExistException If one of the accounts do not exist
 	 */
-	public void transfer(String fromaccount, Bank tobank, String toaccount, Money amount) throws AccountDoesNotExistException {
+	public void transfer(String fromaccount, Bank tobank, String toaccount, Money amount) throws AccountDoesNotExistException, NotEnoughFundsException {
 		if (!accounts.containsKey(fromaccount) || !tobank.accounts.containsKey(toaccount)) {
 			throw new AccountDoesNotExistException();
 		}
@@ -119,8 +122,9 @@ public class Bank {
 	 * @param amount Amount of Money to transfer
 	 * @throws AccountDoesNotExistException If one of the accounts do not exist
 	 */
-	public void transfer(String fromaccount, String toaccount, Money amount) throws AccountDoesNotExistException {
-		transfer(fromaccount, this, fromaccount, amount);
+	public void transfer(String fromaccount, String toaccount, Money amount) throws AccountDoesNotExistException, NotEnoughFundsException {
+		//TODO Transfer test failed. Wrong toAccount
+		transfer(fromaccount, this, toaccount, amount);
 	}
 
 	/**
@@ -151,7 +155,7 @@ public class Bank {
 	/**
 	 * A time unit passes in the system
 	 */
-	public void tick() throws AccountDoesNotExistException {
+	public void tick() throws AccountDoesNotExistException, NotEnoughFundsException {
 		for (Account account : accounts.values()) {
 			account.tick();
 		}

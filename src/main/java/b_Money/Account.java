@@ -43,7 +43,7 @@ public class Account {
 	/**
 	 * A time unit passes in the system
 	 */
-	public void tick() {
+	public void tick() throws NotEnoughFundsException {
 		for (TimedPayment tp : timedPayments.values()) {
 			tp.tick(); tp.tick();
 		}
@@ -61,7 +61,11 @@ public class Account {
 	 * Withdraw money from the account
 	 * @param money Money to withdraw.
 	 */
-	public void withdraw(Money money) {
+	public void withdraw(Money money) throws NotEnoughFundsException {
+		// TODO Found with withdrawal test. No "NotEnoughFundsException"
+		Money result = content.sub(money);
+		if (result.getAmount() < 0)
+			throw new NotEnoughFundsException();
 		content = content.sub(money);
 	}
 
@@ -91,7 +95,7 @@ public class Account {
 		}
 
 		/* Return value indicates whether a transfer was initiated */
-		public Boolean tick() {
+		public Boolean tick() throws NotEnoughFundsException {
 			if (next == 0) {
 				next = interval;
 
